@@ -5,7 +5,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
 
-const noteRouter = require('./note/note.router');
+const noteRouter = require('./note/note.router.js');
 const { NODE_ENV } = require('./config');
 const logger = require('./logger.js');
 const app = express();
@@ -25,12 +25,14 @@ app.use(function errorHandler(error, req, res, next){
     console.error(error);
     response = { message: error.message, error };
   }
+  logger.error('Server error');
   res.status(500).json(response);
 });
-app.use('/api', noteRouter);
+
 app.get('/', (req,res)=>{
   res.send('hello, world!');
 });
 
+app.use('/api', noteRouter);
 
 module.exports = app;

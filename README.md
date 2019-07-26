@@ -9,6 +9,13 @@ Endpoints:
 
 table-- referred to as singular noun folder and note
 
+
+## migration of data:
+psql -U dunder-mifflin -d noteful -f ./migrations/001.do.create_noteful.sql 
+
+psql -U dunder-mifflin -d noteful -f ./migrations/001.undo.create_noteful.sql 
+
+
 ## Set up
 
 Complete the following steps to start a new project (NEW-PROJECT-NAME):
