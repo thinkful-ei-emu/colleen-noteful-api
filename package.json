@@ -9,6 +9,7 @@
     "deploy": "git push heroku master",
     "dev": "nodemon src/server",
     "debug": "ndb server",
+    "migrate": "postgrator --config postgrator-config.js",
     "test": "mocha --require test/setup.js"
   },
   "keywords": [],
@@ -17,11 +18,15 @@
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^8.0.0",
+    "eslint": "^6.1.0",
     "express": "^4.17.1",
     "helmet": "^3.19.0",
     "knex": "^0.19.1",
     "morgan": "^1.9.1",
-    "pq": "0.0.3"
+    "pg": "^7.12.0",
+    "pq": "0.0.3",
+    "winston": "^3.2.1",
+    "xss": "^1.0.6"
   },
   "devDependencies": {
     "chai": "^4.2.0",

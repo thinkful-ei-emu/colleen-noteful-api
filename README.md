@@ -1,6 +1,13 @@
-# Express Boilerplate!
+# Noteful API
 
-This is a boilerplate project used for starting new projects!
+Acts as the API for the noteful app, where notes can be created and organized into folders
+
+Endpoints: 
+/folder/:folderId--displays one folder and list of notes inside
+/note/:noteId--displays one note and its content
+/note--displays all notes, not organized by folder
+
+table-- referred to as singular noun folder and note
 
 ## Set up
 
