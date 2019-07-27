@@ -40,3 +40,11 @@
 {"message":"note with id 1 not found","level":"error"}
 {"message":"Note with id 1 created","level":"info"}
 {"message":"note with id 1 not found","level":"error"}
+{"message":"note with id 1 not found","level":"error"}
+{"message":"Note with id 1 created","level":"info"}
+{"message":"note with id 1 not found","level":"error"}
+{"message":"Note with id 7 created","level":"info"}
+{"message":"Note with id 8 created","level":"info"}
+{"message":"Note with id 9 created","level":"info"}
+{"message":"Note with id 10 created","level":"info"}
+{"message":"Note with id 11 created","level":"info"}

@@ -1,35 +1,35 @@
 /* eslint-disable strict */
-const noteService = {
-  getNotes(knex){
+const folderService = {
+  getFolders(knex){
     return knex
       .select('*')
-      .from('note');
+      .from('folder');
   },
-  getNoteById(knex, id){
+  getFolderById(knex, id){
     return knex
       .select('*')
-      .from('note')
+      .from('folder')
       .where('id', id)
       .first();
   },
-  addNote(knex, newNote){
+  addFolder(knex, newFolder){
     return knex
       .returning('*')
-      .insert(newNote)
-      .into('note')
+      .insert(newFolder)
+      .into('folder')
       .then(rows=>rows[0]);
   },
-  deleteNote(knex, id){
+  deleteFolder(knex, id){
     return knex
-      .from('note')
+      .from('folder')
       .where('id', id)
       .delete();
   },
-  updateNote(knex, id, updatedInfo){
+  updateFolder(knex, id, updatedInfo){
     return knex
-      .from('note')
+      .from('folder')
       .where('id', id)
       .update(updatedInfo);
   }
 };
-module.exports = noteService;
+module.exports = folderService;

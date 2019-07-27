@@ -9,7 +9,7 @@ const { makeNoteList } = require('./note.fixture.js');
 const { makeFolders } = require('./folder.fixture.js');
 
 
-describe.only('Note Endpoints', function() {
+describe('Folder Endpoints', function() {
   let db;
   before('make knex instance', ()=>{
     db = knex({
@@ -23,34 +23,36 @@ describe.only('Note Endpoints', function() {
   after('disconnect from db', ()=>db.destroy());
   afterEach('clean up', ()=>db.raw('TRUNCATE note, folder RESTART IDENTITY CASCADE'));
 
-  describe('GET /api/note', ()=>{
-    context('Given there are notes in db', ()=>{
+  describe('GET /api/folder', ()=>{
+    context('Given there are folders in db', ()=>{
       const testFolders = makeFolders();
-      const testNotes = makeNoteList();
-      beforeEach('clean up', ()=>db.raw('TRUNCATE note, folder RESTART IDENTITY CASCADE'));
-      beforeEach('insert folder', ()=>{
+      const testList = makeNoteList();
+
+      beforeEach('clean up', ()=>db.raw('TRUNCATE folder, note RESTART IDENTITY CASCADE'));
+      beforeEach('add notes and folders',()=>{
         return db.insert(testFolders).into('folder')
           .then(()=>{
-            return db.insert(testNotes).into('note');
+            return db.insert(testList).into('note');
           });
       });
-      afterEach('clean up', ()=>db.raw('TRUNCATE note, folder RESTART IDENTITY CASCADE'));
+      afterEach('clean up', ()=>db.raw('TRUNCATE folder, note RESTART IDENTITY CASCADE'));
 
-      it('responds 200 with notes', ()=> {
+      it('responds 200 with folders', ()=> {
         return supertest(app)
-          .get('/api/note')
-          .expect(200, testNotes);
+          .get('/api/folder')
+          .expect(200)
+          .then(res=>{
+            expect(res.body).to.eql(testFolders);
       });
     
     });
-    context('Given there are no notes in db', ()=>{
-      const testFolders= makeFolders();
-      beforeEach('insert folder', ()=>{
-        return db.insert(testFolders).into('folder');
-      });
+    context('Given there are no folders in db', ()=>{
+      beforeEach('clean up', ()=>db.raw('TRUNCATE folder, note RESTART IDENTITY CASCADE'));
+      afterEach('clean up', ()=>db.raw('TRUNCATE folder, note RESTART IDENTITY CASCADE'));
+
       it('responds 200 with empty array', ()=>{
         return supertest(app)
-          .get('/api/note')
+          .get('/api/folder')
           .expect(200)
           .then(res=>{
             expect(res.body).to.eql([]);
@@ -58,65 +60,69 @@ describe.only('Note Endpoints', function() {
       });
     });
   });
-  describe('GET /api/note/:noteid', ()=>{
-    context('given there are notes in the db', ()=>{
+  describe('GET /api/folder/:folderid', ()=>{
+    context('given there are folders in the db', ()=>{
       const testList = makeNoteList();
       const testFolders = makeFolders();
+      beforeEach('clean up', ()=>db.raw('TRUNCATE folder, note RESTART IDENTITY CASCADE'));
+
       beforeEach('add notes and folders',()=>{
         return db.insert(testFolders).into('folder')
           .then(()=>{
             return db.insert(testList).into('note');
           });
       });
-      it('responds 200 with note of given ID', ()=>{
+      afterEach('clean up', ()=>db.raw('TRUNCATE folder, note RESTART IDENTITY CASCADE'));
+
+      it('responds 200 with folder of given ID', ()=>{
         const testId=2;
-        const expectedNote = testList[testId-1];
+        const expectedFolder = testFolders[testId-1];
         return supertest(app)
-          .get(`/api/note/${testId}`)
-          .expect(200, expectedNote);
+          .get(`/api/folder/${testId}`)
+          .expect(200, expectedFolder);
       });
     });
-    context('given the note does not exist', ()=>{
+    context('given the folder does not exist', ()=>{
       it('responds 404 with error message',()=>{
         return supertest(app)
-          .get('/api/note/1')
-          .expect(404, {error: {message: 'note does not exist'}});
+          .get('/api/folder/1')
+          .expect(404, {error: {message: 'folder does not exist'}});
       });
     });
 
   });
-  describe('POST /note', ()=>{
+  describe('POST /folder', ()=>{
     context('given the folder exists',()=>{
+      beforeEach('clean up', ()=>db.raw('TRUNCATE folder RESTART IDENTITY CASCADE'));
+
       const testFolders = makeFolders();
       beforeEach('add folders to db',()=>{
         return db.insert(testFolders).into('folder');
       });
-      it('responds 201 and with the new note', ()=>{
-        const newNote = {
-          note_name: 'new note',
-          note_content: 'new note content',
-          folder: 2
+      afterEach('clean up', ()=>db.raw('TRUNCATE folder RESTART IDENTITY CASCADE'));
+
+      it('responds 201 and with the new folder', ()=>{
+        const newFolder = {
+          folder_name: 'new folder',
         };
         return supertest(app)
-          .post('/api/note')
-          .send(newNote)
+          .post('/api/folder')
+          .send(newFolder)
           .expect(201)
           .expect(res=>{
-            expect(res.headers.location).to.eql(`/api/note/${res.body.note.id}`);
+            expect(res.headers.location).to.eql(`/api/folder/${res.body.folder.id}`);
           });
       });
-      const requiredFields = ['note_name', 'note_content', 'folder'];
+      const requiredFields = ['folder_name'];
       requiredFields.forEach(field => {
-        const newNote = {
-          note_name: 'new note',
-          note_content: 'new content',
-          folder: '1'
+        const newFolder = {
+          folder_name: 'new folder',
         };
         it('responds with 400 and error message if field is missing', ()=>{
-          delete newNote[field];
+          delete newFolder[field];
           return supertest(app)
-            .post('/api/note')
-            .send(newNote)
+            .post('/api/folder')
+            .send(newFolder)
             .expect(400, {
               error: {message: `Missing ${field} in request body`}
             });
@@ -125,8 +131,8 @@ describe.only('Note Endpoints', function() {
     });
 
   });
-  describe('DELETE /note:id', ()=>{
-    context('if notes in db', ()=>{
+  describe('DELETE /folder:id', ()=>{
+    context('if folders in db', ()=>{
       const testFolders = makeFolders();
       const testList = makeNoteList();
       beforeEach('add notes and folders',()=>{
@@ -135,29 +141,31 @@ describe.only('Note Endpoints', function() {
             return db.insert(testList).into('note');
           });
       });
-      it('responds with 204 and deletes note of id',()=>{
+      afterEach('clean up', ()=>db.raw('TRUNCATE folder, note RESTART IDENTITY CASCADE'));
+
+      it('responds with 204 and deletes folder of id',()=>{
         const testId = 2;
-        const expectedNotes = testList.filter(note => note.id !== testId);
+        const expectedFolders = testFolders.filter(folder => folder.id !== testId);
         return supertest(app)
-          .delete(`/api/note/${testId}`)
+          .delete(`/api/folder/${testId}`)
           .expect(204)
           .then(()=>{
             return supertest(app)
-              .get('/api/note')
-              .expect(expectedNotes);
+              .get('/api/folder')
+              .expect(expectedFolders);
           });
       });
     });
-    context('if note not in db', ()=>{
+    context('if folder not in db', ()=>{
       it('responds with a 404 and error', ()=>{
         return supertest(app)
-          .delete('/api/note/1')
-          .expect(404, {error: {message: 'note does not exist'}});
+          .delete('/api/folder/1')
+          .expect(404, {error: {message: 'folder does not exist'}});
       });
     });
   });
-  describe('PATCH /api/note/:noteId', ()=>{
-    context('given note exists', ()=>{
+  describe('PATCH /api/folder/:folderId', ()=>{
+    context('given folder exists', ()=>{
       const testFolders = makeFolders();
       const testList = makeNoteList();
       beforeEach('add notes and folders',()=>{
@@ -166,53 +174,56 @@ describe.only('Note Endpoints', function() {
             return db.insert(testList).into('note');
           });
       });
-      it('updates note with given information', ()=>{
+      afterEach('clean up', ()=>db.raw('TRUNCATE folder, note RESTART IDENTITY CASCADE'));
+
+      it('updates folder with given information', ()=>{
         const idUpdate = 2;
         const updateThis = {
-          note_name: 'note updated'
+          folder_name: 'folder name updated'
         };
-        const expectedNote = {
-          ...testList[idUpdate -1],
+        const expectedFolder = {
+          ...testFolders[idUpdate -1],
           ...updateThis
         }
         return supertest(app)
-        .patch('/api/note/2')
+        .patch('/api/folder/2')
         .send(updateThis)
         .expect(204)
         .then(res=>{
           return supertest(app)
-          .get('/api/note/2')
-          .expect(expectedNote)
+          .get('/api/folder/2')
+          .expect(expectedFolder)
         });
       });
       it("responds with 204 when updating only a subset of fields", () => {
         const idToUpdate = 2;
-        const updateNote = {
-          note_name: 'new title'
+        const updateFolder = {
+          folder_name: 'new title'
         };
-        const expectedNote = {
+        const expectedFolder = {
           ...testList[idToUpdate - 1],
-          ...updateNote
+          ...updateFolder
         };
         return supertest(app)
-          .patch(`/api/note/${idToUpdate}`)
+          .patch(`/api/folder/${idToUpdate}`)
           .send({
-            ...updateNote,
+            ...updateFolder,
             fieldToIgnore: "should not be included in GET"
           })
           .expect(204)
           .then(res =>
             supertest(app)
-              .get(`/api/note/${idToUpdate}`)
-              .expect(expectedNote)
+              .get(`/api/folder/${idToUpdate}`)
+              .expect(expectedFolder)
           );
       });
       it('responds with 400 if no updated data given', ()=>{
         return supertest(app)
-        .patch('/api/note/2')
+        .patch('/api/folder/2')
         .send({bad: 'fa'})
-        .expect(400, {error: {message: 'Request body must contain note_name, note_content, or folder'}})
+        .expect(400, {error: {message: 'Request body must contain folder_name'}})
       })
     });
-  })
+  });
+});
 });
