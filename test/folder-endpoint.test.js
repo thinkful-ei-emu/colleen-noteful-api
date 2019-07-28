@@ -93,18 +93,9 @@ describe('Folder Endpoints', function() {
   });
   describe('POST /folder', ()=>{
     context('given the folder exists',()=>{
-      beforeEach('clean up', ()=>db.raw('TRUNCATE folder RESTART IDENTITY CASCADE'));
-
-      const testFolders = makeFolders();
-      beforeEach('add folders to db',()=>{
-        return db.insert(testFolders).into('folder');
-      });
-      afterEach('clean up', ()=>db.raw('TRUNCATE folder RESTART IDENTITY CASCADE'));
-
+      
       it('responds 201 and with the new folder', ()=>{
-        const newFolder = {
-          folder_name: 'new folder',
-        };
+        const newFolder = {folder_name: 'new folder'};
         return supertest(app)
           .post('/api/folder')
           .send(newFolder)
@@ -124,7 +115,7 @@ describe('Folder Endpoints', function() {
             .post('/api/folder')
             .send(newFolder)
             .expect(400, {
-              error: {message: `Missing ${field} in request body`}
+              error: {message: `Missing field in request body`}
             });
         });});
      
@@ -174,52 +165,33 @@ describe('Folder Endpoints', function() {
             return db.insert(testList).into('note');
           });
       });
+     
       afterEach('clean up', ()=>db.raw('TRUNCATE folder, note RESTART IDENTITY CASCADE'));
 
       it('updates folder with given information', ()=>{
-        const idUpdate = 2;
+        const idUpdate = 1;
         const updateThis = {
-          folder_name: 'folder name updated'
+          folder_name: 'folder33'
         };
         const expectedFolder = {
-          ...testFolders[idUpdate -1],
+          id: 1,
           ...updateThis
         }
+
         return supertest(app)
-        .patch('/api/folder/2')
+        .patch(`/api/folder/${idUpdate}`)
         .send(updateThis)
         .expect(204)
         .then(res=>{
           return supertest(app)
-          .get('/api/folder/2')
+          .get('/api/folder/1')
           .expect(expectedFolder)
         });
       });
-      it("responds with 204 when updating only a subset of fields", () => {
-        const idToUpdate = 2;
-        const updateFolder = {
-          folder_name: 'new title'
-        };
-        const expectedFolder = {
-          ...testList[idToUpdate - 1],
-          ...updateFolder
-        };
-        return supertest(app)
-          .patch(`/api/folder/${idToUpdate}`)
-          .send({
-            ...updateFolder,
-            fieldToIgnore: "should not be included in GET"
-          })
-          .expect(204)
-          .then(res =>
-            supertest(app)
-              .get(`/api/folder/${idToUpdate}`)
-              .expect(expectedFolder)
-          );
-      });
+     
       it('responds with 400 if no updated data given', ()=>{
         return supertest(app)
-        .patch('/api/folder/2')
+        .patch('/api/folder/1')
         .send({bad: 'fa'})
         .expect(400, {error: {message: 'Request body must contain folder_name'}})
       })

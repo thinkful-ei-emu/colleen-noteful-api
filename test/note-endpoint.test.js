@@ -9,7 +9,7 @@ const { makeNoteList } = require('./note.fixture.js');
 const { makeFolders } = require('./folder.fixture.js');
 
 
-describe.only('Note Endpoints', function() {
+describe('Note Endpoints', function() {
   let db;
   before('make knex instance', ()=>{
     db = knex({

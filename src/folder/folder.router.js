@@ -17,11 +17,10 @@ folderRouter
   })
   .post(bodyParser,(req, res)=>{
     const { folder_name } = req.body;
-    const newFolder = { folder_name };
-    if(newFolder == null){
-      return res.status(400).json({error: {message: 'folder name is required'}});
+    if(folder_name == null){
+      return res.status(400).json({error: {message: 'Missing field in request body'}});
     }
-    FolderService.addFolder(req.app.get('db'), newFolder)
+    FolderService.addFolder(req.app.get('db'), {folder_name})
       .then(folder => {
         return res
           .status(201)
@@ -55,13 +54,12 @@ folderRouter
   })
   .patch(bodyParser,(req, res)=>{
     const { folder_name } = req.body;
-    const updateName = { folder_name };
-    const numOfValues = Object.values(updateName).filter(Boolean).length;
-    if(numOfValues ===0){
+/*     const numOfValues = Object.values(updateName).filter(Boolean).length;
+ */    if(!folder_name){
       return res.status(400).json({
         error: { message: 'Request body must contain folder_name'}
       });
-    } FolderService.updateFolder(req.app.get('db'), req.params.id, updateName)
+    } FolderService.updateFolder(req.app.get('db'), req.params.id, {folder_name})
       .then(()=>{
         return res.status(204).end();
       });
