@@ -27,12 +27,12 @@ noteRouter
     }
 
     NoteService.addNote(req.app.get('db'), newNote)
-      .then(note=>{
-        res
+      .then((note)=>{
+        logger.info(`Note with id ${note.id} created`);
+        return res
           .status(201)
           .location(path.posix.join(req.originalUrl+`/${note.id}`))
           .json({note});
-        logger.info(`Note with id ${note.id} created`);
       });
       
   });
@@ -53,7 +53,7 @@ noteRouter
       .catch(next);
   })
   .get((req, res)=>{
-    res.json({
+    return res.json({
       id: res.note.id,
       note_name: res.note.note_name,
       note_content: res.note.note_content,
