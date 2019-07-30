@@ -138,3 +138,6 @@
 {"message":"Note with id 76 created","level":"info"}
 {"message":"Note with id 77 created","level":"info"}
 {"message":"Note with id 78 created","level":"info"}
+{"message":"note with id 1 not found","level":"error"}
+{"message":"Note with id 1 created","level":"info"}
+{"message":"note with id 1 not found","level":"error"}

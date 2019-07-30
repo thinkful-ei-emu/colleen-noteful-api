@@ -5,10 +5,11 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/server",
-    "predeploy": "npm audit",
+    "predeploy": "npm audit && npm run migrate-production",
     "deploy": "git push heroku master",
     "dev": "nodemon src/server",
     "debug": "ndb server",
+    "migrate-production":"postgrator --config postgrator-production-config.js",
     "migrate": "postgrator --config postgrator-config.js",
     "test": "mocha --require test/setup.js"
   },
